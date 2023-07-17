@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     o, _ = env.reset()
 
-    for i in range(10):
+    for i in range(100):
         print(env.render())
         a = int(input("Action: "))
         print(env.step(a))
