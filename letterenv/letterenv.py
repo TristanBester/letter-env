@@ -79,6 +79,7 @@ class LetterEnv(Env):
         return self._construct_observation(), {}
 
     def step(self, action: int):
+        self.n_steps += 1
         # Move agent in environment
         self._update_agent_position(action)
 
@@ -96,13 +97,13 @@ class LetterEnv(Env):
                     self.agent_position
                 ] = self.replacement_mapping[obs_prop]
 
-            if obs_prop == self.task_string[self.task_string_idx]:
-                if self.task_string_idx < len(self.task_string):
+            try:
+                if obs_prop == self.task_string[self.task_string_idx]:
                     self.task_string_idx += 1
-            else:
-                self.task_failed = True
-                print("Failed task")
-
+                else:
+                    self.task_failed = True
+            except IndexError:
+                pass
         else:
             obs_prop = "_"
 
@@ -115,11 +116,18 @@ class LetterEnv(Env):
             truncated = True
             reward = 0
         else:
-            terminated = not self.task_failed and self.task_string_idx == len(
-                self.task_string
-            )
-            truncated = False
-            reward = 1 if terminated else 0
+            if self.task_failed:
+                terminated = True
+                truncated = False
+                reward = 0
+            elif self.task_string_idx == len(self.task_string):
+                terminated = True
+                truncated = False
+                reward = 1
+            else:
+                terminated = False
+                truncated = False
+                reward = 0
 
         return (
             obs,
