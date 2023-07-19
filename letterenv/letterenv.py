@@ -76,7 +76,16 @@ class LetterEnv(Env):
 
         # Set agent initial position
         self.agent_position = self.agent_start_location
-        return self._construct_observation(), {}
+        if self.agent_position in self.active_propositions:
+            obs_prop = self.active_propositions[self.agent_position]
+        else:
+            obs_prop = "_"
+        obs = (
+            self.agent_position[0],
+            self.agent_position[1],
+            obs_prop,
+        )
+        return obs, {}
 
     def step(self, action: int):
         self.n_steps += 1
@@ -107,7 +116,11 @@ class LetterEnv(Env):
         else:
             obs_prop = "_"
 
-        obs = self._construct_observation()
+        obs = (
+            self.agent_position[0],
+            self.agent_position[1],
+            obs_prop,
+        )
 
         # Determine if episode is terminated due to max number of steps
         if self.spec is not None and self.spec.max_episode_steps == self.n_steps:
@@ -172,7 +185,7 @@ class LetterEnv(Env):
             raise ValueError(f"Invalid action {action}.")
         self.agent_position = (n_row, n_col)
 
-    def _construct_observation(self):
+    def _construct_observation(self, obs_prop):
         if self.agent_position in self.active_propositions:
             obs_props = self.active_propositions[self.agent_position]
         else:
